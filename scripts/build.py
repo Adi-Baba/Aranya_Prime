@@ -39,6 +39,13 @@ def ensure_dirs():
     os.makedirs(BIN_DIR, exist_ok=True)
     os.makedirs(OBJ_DIR, exist_ok=True)
 
+def check_compiler(cmd):
+    try:
+        subprocess.check_call([cmd, "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except (OSError, subprocess.CalledProcessError):
+        return False
+
 def compile_cpp(src_file):
     obj_file = os.path.join(OBJ_DIR, os.path.basename(src_file).replace(".cpp", ".o"))
     print(f"[CPP] {os.path.basename(src_file)}")
@@ -94,14 +101,34 @@ def link(objects):
 
 def main():
     ensure_dirs()
+    
+    print(f"Build Script Running...")
+    print(f"Platform: {SYSTEM}")
+    print(f"Source Directory: {SRC_DIR}")
+
+    # Check Compilers
+    if not check_compiler(CC):
+        print(f"ERROR: C++ compiler '{CC}' not found.")
+        print("Please install g++ (e.g. 'sudo apt install g++' or MinGW).")
+        sys.exit(1)
+        
+    if not check_compiler(FC):
+        print(f"ERROR: Fortran compiler '{FC}' not found.")
+        print("Please install gfortran (e.g. 'sudo apt install gfortran').")
+        sys.exit(1)
+
     objects = []
     
     # 1. C++
-    for f in glob.glob(os.path.join(SRC_DIR, "*.cpp")):
+    cpp_files = glob.glob(os.path.join(SRC_DIR, "*.cpp"))
+    print(f"Found {len(cpp_files)} C++ files: {[os.path.basename(f) for f in cpp_files]}")
+    for f in cpp_files:
         objects.append(compile_cpp(f))
         
     # 2. Fortran
-    for f in glob.glob(os.path.join(SRC_DIR, "*.f90")):
+    f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
+    print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
+    for f in f90_files:
         objects.append(compile_fortran(f))
         
     # 3. V
