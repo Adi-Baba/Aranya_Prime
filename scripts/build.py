@@ -112,10 +112,10 @@ def main():
         sys.stderr.write("Please install g++ (e.g. 'sudo apt install g++' or MinGW).\n")
         sys.exit(1)
         
+    skip_fortran = False
     if not check_compiler(FC):
-        sys.stderr.write(f"ERROR: Fortran compiler '{FC}' not found.\n")
-        sys.stderr.write("Please install gfortran (e.g. 'sudo apt install gfortran').\n")
-        sys.exit(1)
+        sys.stderr.write(f"WARNING: Fortran compiler '{FC}' not found. Skipping Fortran kernels.\n")
+        skip_fortran = True
 
     objects = []
     
@@ -126,10 +126,11 @@ def main():
         objects.append(compile_cpp(f))
         
     # 2. Fortran
-    f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
-    print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
-    for f in f90_files:
-        objects.append(compile_fortran(f))
+    if not skip_fortran:
+        f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
+        print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
+        for f in f90_files:
+            objects.append(compile_fortran(f))
         
     # 3. V
     for f in glob.glob(os.path.join(SRC_DIR, "*.v")):

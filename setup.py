@@ -14,9 +14,19 @@ class CustomBuildPy(build_py):
         
         print(f"Running native build script: {script_path}")
         try:
-            subprocess.check_call([sys.executable, script_path], cwd=project_root)
+            # Capture output so we can print it if something goes wrong
+            result = subprocess.run(
+                [sys.executable, script_path], 
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            print(result.stdout)
         except subprocess.CalledProcessError as e:
-            print(f"Error running build script: {e}")
+            sys.stderr.write("ERROR: Native build failed.\n")
+            sys.stderr.write(f"STDOUT:\n{e.stdout}\n")
+            sys.stderr.write(f"STDERR:\n{e.stderr}\n")
             raise
             
         # 2. Copy the compiled library to the package directory
