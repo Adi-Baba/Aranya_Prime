@@ -19,3 +19,8 @@ __pycache__/
 
 # Testing
 *.log
+
+# Packaging
+build/
+*.egg-info/
+
