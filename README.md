@@ -26,8 +26,8 @@ Aranya Prime is a modular, cross-platform computation engine designed to solve t
 
 ```mermaid
 graph LR
-    User[Python User] --> Wrapper(aranya_prime Wrapper)
-    Wrapper --> Loader{OS Loader}
+    User[Python User] --> API(aranya_prime API)
+    API --> Loader{OS Loader}
     Loader -- Windows --> Win[aranya_prime.dll]
     Loader -- Linux --> Lin[aranya_prime.so]
     Loader -- macOS --> Mac[aranya_prime.dylib]
@@ -86,7 +86,7 @@ pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 3.  **Run the Demo**
     ```python
     import numpy as np
-    from aranya_prime import wrapper
+    import aranya_prime as ap
 
     # Create Data
     N = 10_000_000
@@ -95,10 +95,10 @@ pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
     angle = 0.785 # 45 degrees
 
     # 1. Faster Trigonometry
-    res_sin = wrapper.sin(x) 
+    res_sin = ap.sin(x) 
 
     # 2. ~7x Faster Rotation (Kernel Fusion)
-    rx, ry = wrapper.rotate_2d(x, y, angle)
+    rx, ry = ap.rotate_2d(x, y, angle)
 
     print("Success! Aranya Prime is running.")
     ```

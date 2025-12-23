@@ -6,7 +6,7 @@ import ctypes
 # Load Aranya Prime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
-    from aranya_prime import wrapper
+    import aranya_prime as ap
 except Exception as e:
     print(f"CRITICAL: Engine not loaded. {e}")
     sys.exit(1)
@@ -29,7 +29,7 @@ def deep_audit():
     ground_truth = data**3 + data**2 + data
     
     # Aranya Prime (C++ Fused AVX2)
-    native_result = wrapper.polynomial(data)
+    native_result = ap.polynomial(data)
     
     # ---------------------------------------------------------
     # 1. Error Analysis (Absolute & Relative)
@@ -85,7 +85,7 @@ def deep_audit():
     try:
         data2 = (np.random.rand(N) * 2000 - 1000).astype(np.float64)
         gt_add = data + data2
-        nr_add = wrapper.add(data, data2)
+        nr_add = ap.add(data, data2)
         
         diff_add = np.abs(gt_add - nr_add)
         max_add_err = np.max(diff_add)
