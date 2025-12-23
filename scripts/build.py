@@ -108,16 +108,20 @@ def main():
     print(f"Source Directory: {SRC_DIR}")
 
     # Check Compilers
+    # We use flush=True to ensure these prints appear in PIP logs immediately.
+    
     if not check_compiler(CC):
         sys.stderr.write(f"ERROR: C++ compiler '{CC}' not found.\n")
-        sys.stderr.write("Please install g++ (e.g. 'sudo apt install g++' or MinGW).\n")
+        sys.stderr.write("Aranya Prime REQUIRES a C++ compiler (g++).\n")
+        sys.stderr.flush()
         sys.exit(1)
         
+    skip_fortran = False
     if not check_compiler(FC):
-        sys.stderr.write(f"ERROR: Fortran compiler '{FC}' not found.\n")
-        sys.stderr.write("Aranya Prime REQUIRES a Fortran compiler for high-performance BLAS kernels.\n")
-        sys.stderr.write("Please install gfortran (e.g. 'sudo apt install gfortran' or MinGW).\n")
-        sys.exit(1)
+        sys.stderr.write(f"WARNING: Fortran compiler '{FC}' not found.\n")
+        sys.stderr.write("Skipping Fortran kernels. Some features (BLAS) will be slower or unavailable.\n")
+        sys.stderr.flush()
+        skip_fortran = True
 
     objects = []
     
@@ -128,10 +132,11 @@ def main():
         objects.append(compile_cpp(f))
         
     # 2. Fortran
-    f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
-    print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
-    for f in f90_files:
-        objects.append(compile_fortran(f))
+    if not skip_fortran:
+        f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
+        print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}", flush=True)
+        for f in f90_files:
+            objects.append(compile_fortran(f))
         
     # 3. V
     for f in glob.glob(os.path.join(SRC_DIR, "*.v")):

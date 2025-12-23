@@ -12,15 +12,23 @@ class CustomBuildPy(build_py):
         project_root = os.path.dirname(os.path.abspath(__file__))
         script_path = os.path.join(project_root, "scripts", "build.py")
         
-        print(f"Running native build script: {script_path}")
         try:
-            # Stream output directly to console so user sees build progress/errors
+            # Stream output directly to console
+            # We explicitly flush to ensure pip captures it before any crash
+            print(f"Running native build script: {script_path}", flush=True)
+            
             subprocess.check_call(
                 [sys.executable, script_path], 
                 cwd=project_root,
             )
-        except subprocess.CalledProcessError:
-            sys.stderr.write("ERROR: Native build failed. See output above for details.\n")
+        except subprocess.CalledProcessError as e:
+            # If the script failed, it should have printed why. 
+            # We add a final persistent error message.
+            sys.stderr.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+            sys.stderr.write("ERROR: Aranya Prime Native Compilation Failed.\n")
+            sys.stderr.write("See messages above for details (missing g++ or gfortran?).\n")
+            sys.stderr.write("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+            sys.stderr.flush()
             sys.exit(1)
             
         # 2. Copy the compiled library to the package directory
