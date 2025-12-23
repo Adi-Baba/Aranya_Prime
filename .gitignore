@@ -1,0 +1,21 @@
+# Build Artifacts
+bin/
+obj/
+*.dll
+*.so
+*.dylib
+*.o
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE / Metadata
+.vscode/
+.idea/
+.gemini/
+
+# Testing
+*.log
