@@ -46,13 +46,13 @@ graph LR
 
 | Operation | Speedup vs NumPy | Status |
 | :--- | :--- | :--- |
-| **Rotate 2D** | **7.04x** | 🚀 Massive |
-| **Trigonometry** | **2.0x** | ✅ Faster |
-| **Transforms** | **1.6x** | ✅ Faster |
-| **Array Ops** | **1.5x - 2.8x** | ✅ Saturated |
-| **Dot Product** | **1.07x - 1.24x** | ✅ Parity+ |
+| **Rotate 2D** | **~6.7x** | 🚀 Massive |
+| **Trigonometry** | **~1.5x - 3.5x** | ✅ Faster |
+| **Transforms** | **~2.6x** | ✅ Faster |
+| **Array Ops** | **~1.2x - 1.4x** | ✅ Saturated |
+| **Dot Product** | **~1.6x** | ✅ Faster |
 
-*(Tested on Intel Core i7 / AVX2 enabled)*
+*(Benchmarks are dynamic and hardware-dependent. Tested on Intel Core i7 / AVX2 enabled)*
 
 ---
 
@@ -60,21 +60,21 @@ graph LR
 
 ### Option 1: Pip Install from GitHub
 ```bash
-pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
+pip install .
 ```
+*(This automatically compiles native kernels on your machine)*
 
 ### Option 2: Clone and Build
 
 1.  **Clone the Repository**
     ```bash
-    !git clone https://github.com/Adi-Baba/Aranya_Prime.git
-    %cd Aranya_Prime
+    git clone https://github.com/Adi-Baba/Aranya_Prime.git
+    cd Aranya_Prime
     ```
 
-2.  **Build the Engine**
-    The build script automatically detects your OS (Linux for Colab) and compiles the C++/Fortran kernels.
-    ```python
-    !python scripts/build.py
+2.  **Install**
+    ```bash
+    pip install .
     ```
 
 3.  **Run the Demo**
@@ -96,7 +96,7 @@ pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
     # 1. Faster Trigonometry
     res_sin = wrapper.sin(x) 
 
-    # 2. 7x Faster Rotation (Kernel Fusion)
+    # 2. ~7x Faster Rotation (Kernel Fusion)
     rx, ry = wrapper.rotate_2d(x, y, angle)
 
     print("Success! Aranya Prime is running.")
@@ -111,11 +111,11 @@ pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 *   **Windows**: MinGW-w64 (`g++`, `gfortran`) added to PATH.
 *   **Linux/Mac**: `gcc`, `gfortran` (Standard install).
 
-### Build Command
+### Install Command
 ```bash
-python scripts/build.py
+pip install .
 ```
-*This creates `bin/aranya_prime.[dll/so/dylib]` depending on your OS.*
+*This detects your OS, compiles the C++/Fortran kernels, and installs the package.*
 
 ---
 
