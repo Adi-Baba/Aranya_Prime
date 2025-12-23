@@ -59,10 +59,14 @@ before-all = "choco install mingw --force"
 environment = { PATH="C:\\ProgramData\\chocolatey\\bin;$PATH", CC="g++", CXX="g++", FC="gfortran" }
 
 # 3. MACOS Config (runs on host)
+# 3. MACOS Config (runs on host)
 [tool.cibuildwheel.macos]
 # Use default compiler (clang) which handles cross-compilation for arm64/x86_64 correctly.
-# We trust it to compile standard C/C++ code.
-# OpenMP is optional in our build script now.
+# We explicitly install gcc to get gfortran (needed for Fortran kernels).
+before-all = "brew install gcc"
+# We don't set CC/CXX to gcc, we stick to Clang. checking FC is tricky as brew gcc version varies.
+# We will trust our build script to find 'gfortran' which brew links.
+environment = { FC="gfortran" }
 
 [tool.setuptools.package-data]
 aranya_prime = ["*.dll", "*.so", "*.dylib"]

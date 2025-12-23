@@ -38,7 +38,8 @@ CFLAGS = ["-c", "-O3", "-fPIC"]
 FFLAGS = ["-c", "-O3", "-fPIC"]
 
 # V compilation is trikcy for linking. We compile V to C first.
-VFLAGS = ["-shared", "-prod", "-cc", "gcc", "-cflags", "-O3 -fPIC"]
+# -gc none: Don't use Boehm GC (removes gc.h dependency). We manage memory manually (or leak, it's a kernel).
+VFLAGS = ["-shared", "-prod", "-cc", "gcc", "-gc", "none", "-cflags", "-O3 -fPIC"]
 
 def check_flag(compiler, flag):
     """Checks if a compiler supports a specific flag."""
@@ -110,11 +111,15 @@ def compile_v(src_file):
     print(f"[V]   {os.path.basename(src_file)}")
     
     # 1. V -> C
-    subprocess.check_call([VC, "-o", c_file, src_file])
+    # We pass -gc none to avoid generating code that depends on gc.h
+    # We pass -prod for optimized C generation.
+    subprocess.check_call([VC, "-gc", "none", "-prod", "-o", c_file, src_file])
     
     # 2. C -> O
     # V generated C often needs specific linkage, but for simple kernels typical settings work.
-    subprocess.check_call([CC, "-c", "-O3", "-fPIC", "-w", c_file, "-o", obj_file])
+    # CRITICAL: Use gcc (C compiler) not CC (g++) because V generates C code that violates C++ strictness.
+    # We assume 'gcc' is in PATH if 'g++' is.
+    subprocess.check_call(["gcc", "-c", "-O3", "-fPIC", "-w", c_file, "-o", obj_file])
     return obj_file
 
 def link(objects):
@@ -177,6 +182,12 @@ def main():
         print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}", flush=True)
         for f in f90_files:
             objects.append(compile_fortran(f))
+            
+        # LINKING FIX:
+        # When mixing Clang (C++) and GFortran, we must manually link the Fortran runtime.
+        # Clang doesn't know about it.
+        if f90_files and SYSTEM != "Windows":
+             SHARED_FLAG_EXTRAS.append("-lgfortran")
         
     # 3. V
     for f in glob.glob(os.path.join(SRC_DIR, "*.v")):
