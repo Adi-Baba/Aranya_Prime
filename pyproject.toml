@@ -60,9 +60,9 @@ environment = { PATH="C:\\ProgramData\\chocolatey\\bin;$PATH", CC="g++", CXX="g+
 
 # 3. MACOS Config (runs on host)
 [tool.cibuildwheel.macos]
-# Install specific gcc version for stability and OpenMP support
-before-all = "brew install gcc@13"
-environment = { CC="gcc-13", CXX="g++-13", FC="gfortran-13" }
+# Use default compiler (clang) which handles cross-compilation for arm64/x86_64 correctly.
+# We trust it to compile standard C/C++ code.
+# OpenMP is optional in our build script now.
 
 [tool.setuptools.package-data]
 aranya_prime = ["*.dll", "*.so", "*.dylib"]

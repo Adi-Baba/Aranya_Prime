@@ -31,10 +31,50 @@ DLL_PATH = os.path.join(BIN_DIR, f"aranya_prime{LIB_EXT}")
 CC = os.environ.get("CC", "g++")
 FC = os.environ.get("FC", "gfortran")
 VC = os.environ.get("VC", "v")
-CFLAGS = ["-c", "-O3", "-mavx2", "-mfma", "-fopenmp", "-fPIC"]
-FFLAGS = ["-c", "-O3", "-mavx2", "-fopenmp", "-fPIC"]
+# Flags
+# Start with safe, generic optimization flags.
+# We DO NOT hardcode -mavx2 or -mfma because they break ARM64 (Mac M1/M2) builds.
+CFLAGS = ["-c", "-O3", "-fPIC"]
+FFLAGS = ["-c", "-O3", "-fPIC"]
+
 # V compilation is trikcy for linking. We compile V to C first.
-VFLAGS = ["-shared", "-prod", "-cc", "gcc", "-cflags", "-O3 -mavx2 -fopenmp"]
+VFLAGS = ["-shared", "-prod", "-cc", "gcc", "-cflags", "-O3 -fPIC"]
+
+def check_flag(compiler, flag):
+    """Checks if a compiler supports a specific flag."""
+    try:
+        # Create a dummy file
+        with open("test_flag.c", "w") as f:
+            f.write("int main() { return 0; }")
+        
+        # Try to compile with the flag
+        subprocess.check_call(
+            [compiler, flag, "test_flag.c", "-o", "test_flag.o"], 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
+        os.remove("test_flag.c")
+        if os.path.exists("test_flag.o"):
+            os.remove("test_flag.o")
+        return True
+    except (OSError, subprocess.CalledProcessError):
+        if os.path.exists("test_flag.c"): os.remove("test_flag.c")
+        return False
+
+# Detect OpenMP support dynamically
+HAS_OPENMP = False
+if check_flag(CC, "-fopenmp"):
+    CFLAGS.append("-fopenmp")
+    FFLAGS.append("-fopenmp")
+    VFLAGS[-1] += " -fopenmp" # Update V flags string
+    SHARED_FLAG_EXTRAS = ["-fopenmp"]
+    HAS_OPENMP = True
+    print("OpenMP support detected. Enabled.")
+else:
+    # Mac Clang might need -Xpreprocessor -fopenmp, but linking is hard without libomp.
+    # We will fallback to NO OpenMP for robustness.
+    SHARED_FLAG_EXTRAS = []
+    print("OpenMP NOT detected. Building single-threaded.")
 
 def ensure_dirs():
     os.makedirs(BIN_DIR, exist_ok=True)
@@ -81,7 +121,7 @@ def link(objects):
     print(f"[LINK] Creating {os.path.basename(DLL_PATH)}")
     
     # Base Link Command
-    cmd = [CC, SHARED_FLAG, "-fopenmp", "-o", DLL_PATH] + objects
+    cmd = [CC, SHARED_FLAG] + SHARED_FLAG_EXTRAS + ["-o", DLL_PATH] + objects
     
     # OS Specific Link Flags
     if SYSTEM == "Windows":

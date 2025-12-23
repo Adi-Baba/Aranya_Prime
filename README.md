@@ -139,7 +139,25 @@ Once pre-requisites are met:
 ```bash
 pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 ```
-*This detects your OS, compiles the C++/Fortran kernels, and installs the package.*
+
+---
+
+## ❓ Troubleshooting
+
+### "C++ compiler not found"
+**Cause:** You are installing from source (git/tarball) but don't have a C++ compiler.
+**Fix:** 
+1.  **Recommended:** Wait for the binary wheels (pre-built packages) to be available on PyPI.
+2.  **Immediate:** Install `g++` (Linux) or `MinGW` (Windows) as described in Prerequisites.
+
+### "Fortran compiler not found" (Warning)
+**Cause:** You don't have `gfortran`.
+**Effect:** The installation will **succeed**, but high-performance BLAS kernels (e.g. Matrix Multiplication) will be disabled or fall back to slower implementations.
+**Fix:** Install `gfortran` to enable full performance.
+
+### "Release 0.1.0a1 not found"
+**Cause:** You might be trying to pip install the package name before it's uploaded to PyPI.
+**Fix:** Use the `git+https...` command.
 
 ---
 
