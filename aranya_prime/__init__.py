@@ -19,9 +19,10 @@ Architecture: Standard Native (Source -> Build -> Link -> Load)
 
 from .version import __version__, __author__, get_banner
 
-# Expose core functionality
-try:
-    from .wrapper import polynomial, add
-except ImportError:
-    print("Warning: Aranya Prime DLL not built. Run 'scripts/build.py' to compile.")
-
+# Expose core functionality - lazy loading means import won't fail before build
+from .wrapper import (
+    polynomial, add, sub, mul, div,
+    sin, cos, tan,
+    dot, magnitude, normalize,
+    scale, rotate_2d
+)
