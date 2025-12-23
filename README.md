@@ -60,9 +60,8 @@ graph LR
 
 ### Option 1: Pip Install from GitHub
 ```bash
-pip install .
+pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 ```
-*(This automatically compiles native kernels on your machine)*
 
 ### Option 2: Clone and Build
 
@@ -79,12 +78,7 @@ pip install .
 
 3.  **Run the Demo**
     ```python
-    import sys
-    import os
     import numpy as np
-    
-    # Add to path
-    sys.path.append(os.getcwd())
     from aranya_prime import wrapper
 
     # Create Data
