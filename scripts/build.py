@@ -115,7 +115,9 @@ def main():
     if objects:
         link(objects)
     else:
-        print("No source files found!")
+        print("ERROR: No source files found! Build failed.")
+        print(f"Checked SRC_DIR: {SRC_DIR}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

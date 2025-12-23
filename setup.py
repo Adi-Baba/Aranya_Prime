@@ -36,7 +36,9 @@ class CustomBuildPy(build_py):
             print(f"Copying native library from {src_lib} to {dst_lib}")
             shutil.copy2(src_lib, dst_lib)
         else:
-            print(f"WARNING: Native library {src_lib} not found. Installation may fail at runtime.")
+            print(f"ERROR: Native library {src_lib} was not found after build.")
+            print("Build script may have failed or produced output in unexpected location.")
+            sys.exit(1)
 
         # 3. Proceed with standard packaging
         super().run()
