@@ -19,10 +19,20 @@ Architecture: Standard Native (Source -> Build -> Link -> Load)
 
 from .version import __version__, __author__, get_banner
 
-# Expose core functionality - lazy loading means import won't fail before build
-from .wrapper import (
-    polynomial, add, sub, mul, div,
+# Expose core functionality directly
+from .core import (
+    polynomial, 
+    add, sub, mul, div,
     sin, cos, tan,
     dot, magnitude, normalize,
     scale, rotate_2d
 )
+
+__all__ = [
+    "polynomial",
+    "add", "sub", "mul", "div",
+    "sin", "cos", "tan",
+    "dot", "magnitude", "normalize",
+    "scale", "rotate_2d",
+    "__version__", "__author__", "get_banner"
+]

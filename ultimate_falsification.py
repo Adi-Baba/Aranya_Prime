@@ -7,7 +7,7 @@ import math
 # Load Aranya Prime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
-    from aranya_prime import wrapper
+    import aranya_prime as ap
 except Exception as e:
     print(f"CRITICAL: Engine not loaded. {e}")
     sys.exit(1)
@@ -33,7 +33,7 @@ def run_falsification():
         try:
             data = np.random.rand(s).astype(np.float64)
             res_np = data**3 + data**2 + data
-            res_ar = wrapper.polynomial(data)
+            res_ar = ap.polynomial(data)
             
             if s == 0:
                 if len(res_ar) == 0:
@@ -58,7 +58,7 @@ def run_falsification():
     data = np.array([1.0, np.nan, np.inf, -np.inf, 0.0, -1.0], dtype=np.float64)
     try:
         res_np = data**3 + data**2 + data
-        res_ar = wrapper.polynomial(data)
+        res_ar = ap.polynomial(data)
         
         # NumPy/C++ standard: NaN->NaN, Inf->Inf
         # We check frame-by-frame equality using hash/isnan logic
@@ -83,7 +83,7 @@ def run_falsification():
     data = np.array([1e-300, 1e-310, 0.0], dtype=np.float64)
     # x^3 will underflow to 0 probably
     res_np = data**3 + data**2 + data
-    res_ar = wrapper.polynomial(data)
+    res_ar = ap.polynomial(data)
     
     if np.allclose(res_np, res_ar, atol=0): # Strict equality
         log("Subnormal Precision Passed", "PASS")
@@ -98,7 +98,7 @@ def run_falsification():
     data = np.random.rand(100_000).astype(np.float64)
     t0 = time.time()
     for _ in range(1000):
-        _ = wrapper.polynomial(data)
+        _ = ap.polynomial(data)
     dur = time.time() - t0
     log(f"Executed 1000 iter in {dur:.2f}s", "PASS")
     
@@ -110,7 +110,7 @@ def run_falsification():
         x = np.random.rand(1000)
         y = np.random.rand(1000)
         res_np = x + y
-        res_f90 = wrapper.add(x, y)
+        res_f90 = ap.add(x, y)
         if np.allclose(res_np, res_f90):
              log("Fortran Kernel Passed", "PASS")
         else:

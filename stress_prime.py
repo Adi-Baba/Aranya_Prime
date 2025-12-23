@@ -6,7 +6,7 @@ import os
 # Load Aranya Prime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
-    from aranya_prime import wrapper
+    import aranya_prime as ap
     print("[INIT] Aranya Prime Loaded Successfully.")
 except Exception as e:
     print(f"[FAIL] Engine not loaded. {e}")
@@ -81,30 +81,30 @@ def main():
     angle = 0.785398 # 45 degrees
     
     # 1. Trigonometry
-    benchmark("Sin", wrapper.sin, a, ref_func=np.sin)
-    benchmark("Cos", wrapper.cos, a, ref_func=np.cos)
-    benchmark("Tan", wrapper.tan, a, ref_func=np.tan)
+    benchmark("Sin", ap.sin, a, ref_func=np.sin)
+    benchmark("Cos", ap.cos, a, ref_func=np.cos)
+    benchmark("Tan", ap.tan, a, ref_func=np.tan)
     
     # 2. Array Ops
-    benchmark("Add (Fortran)", wrapper.add, a, b, ref_func=np.add)
-    benchmark("Sub", wrapper.sub, a, b, ref_func=np.subtract)
-    benchmark("Mul", wrapper.mul, a, b, ref_func=np.multiply)
-    benchmark("Div", wrapper.div, a, b, ref_func=np.divide)
+    benchmark("Add (Fortran)", ap.add, a, b, ref_func=np.add)
+    benchmark("Sub", ap.sub, a, b, ref_func=np.subtract)
+    benchmark("Mul", ap.mul, a, b, ref_func=np.multiply)
+    benchmark("Div", ap.div, a, b, ref_func=np.divide)
     
     # 3. Linear Algebra
-    benchmark("Dot Product", wrapper.dot, a, b, ref_func=np.dot)
-    benchmark("Magnitude", wrapper.magnitude, a, ref_func=np.linalg.norm)
+    benchmark("Dot Product", ap.dot, a, b, ref_func=np.dot)
+    benchmark("Magnitude", ap.magnitude, a, ref_func=np.linalg.norm)
     
     def normalize_ref(v):
         norm = np.linalg.norm(v)
         if norm == 0: return v
         return v / norm
         
-    benchmark("Normalize", wrapper.normalize, a, ref_func=normalize_ref)
+    benchmark("Normalize", ap.normalize, a, ref_func=normalize_ref)
     
     # 4. Transformations
     def scale_ref(v, s): return v * s
-    benchmark("Scale", wrapper.scale, a, 2.5, ref_func=scale_ref)
+    benchmark("Scale", ap.scale, a, 2.5, ref_func=scale_ref)
     
     def rotate_ref(x, y, rad):
         c, s = np.cos(rad), np.sin(rad)
@@ -112,7 +112,7 @@ def main():
         ry = x * s + y * c
         return rx, ry
 
-    benchmark("Rotate 2D", wrapper.rotate_2d, a, b, angle, ref_func=rotate_ref)
+    benchmark("Rotate 2D", ap.rotate_2d, a, b, angle, ref_func=rotate_ref)
     
     print("\n[DONE] All tests completed.")
 
