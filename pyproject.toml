@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aranya-prime"
+version = "0.1.0a1"
+description = "High-Performance OIH Computational Engine with native C++/Fortran kernels"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Aditya", email = "adityatheh@gmail.com"}
+]
+keywords = ["high-performance", "computing", "numpy", "optimization", "native"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Adi-Baba/Aranya_Prime"
+Repository = "https://github.com/Adi-Baba/Aranya_Prime.git"
+Issues = "https://github.com/Adi-Baba/Aranya_Prime/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aranya_prime*"]
+
+[tool.setuptools.package-data]
+aranya_prime = ["*.dll", "*.so", "*.dylib"]

@@ -31,10 +31,12 @@ graph LR
     Loader -- Windows --> Win[aranya_prime.dll]
     Loader -- Linux --> Lin[aranya_prime.so]
     Loader -- macOS --> Mac[aranya_prime.dylib]
-    Win & Lin & Mac --> Kernels
+    Win --> Kernels
+    Lin --> Kernels
+    Mac --> Kernels
     subgraph Kernels [Native Engine]
-        CPP[C++ Kernels (Trig/Poly)]
-        F90[Fortran Kernels (Arrays)]
+        CPP[C++ Kernels]
+        F90[Fortran Kernels]
     end
 ```
 
@@ -55,6 +57,13 @@ graph LR
 ---
 
 ## ⚡ Quick Start: Google Colab / Linux
+
+### Option 1: Pip Install from GitHub
+```bash
+pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
+```
+
+### Option 2: Clone and Build
 
 1.  **Clone the Repository**
     ```bash
