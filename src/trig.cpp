@@ -1,10 +1,17 @@
 #include <cmath>
 #include <omp.h>
 
+#ifdef _WIN32
+    #define EXPORT __declspec(dllexport)
+#else
+    #define EXPORT
+#endif
+
+
 extern "C" {
     
     // Sine
-    __declspec(dllexport) void prime_sin(long long n, double* res, double* x) {
+    EXPORT void prime_sin(long long n, double* res, double* x) {
         #pragma omp parallel for
         for (long long i = 0; i < n; i++) {
             res[i] = std::sin(x[i]);
@@ -12,7 +19,7 @@ extern "C" {
     }
 
     // Cosine
-    __declspec(dllexport) void prime_cos(long long n, double* res, double* x) {
+    EXPORT void prime_cos(long long n, double* res, double* x) {
         #pragma omp parallel for
         for (long long i = 0; i < n; i++) {
             res[i] = std::cos(x[i]);
@@ -20,7 +27,7 @@ extern "C" {
     }
 
     // Tangent
-    __declspec(dllexport) void prime_tan(long long n, double* res, double* x) {
+    EXPORT void prime_tan(long long n, double* res, double* x) {
         #pragma omp parallel for
         for (long long i = 0; i < n; i++) {
             res[i] = std::tan(x[i]);
