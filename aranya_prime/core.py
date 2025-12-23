@@ -1,6 +1,8 @@
 import ctypes
 import os
 import numpy as np
+import numpy.typing as npt
+
 import platform
 
 # Determine Library Name
@@ -58,9 +60,15 @@ def _wrap(func_name, argtypes):
 # Common types
 c_n = ctypes.c_longlong
 c_p = ctypes.POINTER(ctypes.c_double)
+NDArrayFloat = npt.NDArray[np.float64]
+
+def _check_equal_size(x: NDArrayFloat, y: NDArrayFloat):
+    if x.size != y.size:
+        raise ValueError(f"Array size mismatch: {x.size} != {y.size}")
 
 # --- 1. Polynomials ---
-def polynomial(x):
+def polynomial(x: NDArrayFloat) -> NDArrayFloat:
+
     """Computes x^3 + x^2 + x"""
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
@@ -68,71 +76,86 @@ def polynomial(x):
     return res
 
 # --- 2. Trigonometry ---
-def sin(x):
+def sin(x: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
     _wrap("prime_sin", [c_n, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p))
     return res
 
-def cos(x):
+def cos(x: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
     _wrap("prime_cos", [c_n, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p))
     return res
 
-def tan(x):
+def tan(x: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
     _wrap("prime_tan", [c_n, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p))
     return res
 
 # --- 3. Array Ops ---
-def add(x, y):
+def add(x: NDArrayFloat, y: NDArrayFloat) -> NDArrayFloat:
+
     """Element-wise addition (Fortran kernel)."""
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res = np.empty_like(x)
     _wrap("prime_math_sum", [c_n, c_p, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), y.ctypes.data_as(c_p))
     return res
 
-def sub(x, y):
+def sub(x: NDArrayFloat, y: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res = np.empty_like(x)
     _wrap("prime_sub", [c_n, c_p, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), y.ctypes.data_as(c_p))
     return res
 
-def mul(x, y):
+def mul(x: NDArrayFloat, y: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res = np.empty_like(x)
     _wrap("prime_mul", [c_n, c_p, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), y.ctypes.data_as(c_p))
     return res
 
-def div(x, y):
+def div(x: NDArrayFloat, y: NDArrayFloat) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res = np.empty_like(x)
     _wrap("prime_div", [c_n, c_p, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), y.ctypes.data_as(c_p))
     return res
 
 # --- 4. Linear Algebra ---
-def dot(x, y):
+def dot(x: NDArrayFloat, y: NDArrayFloat) -> float:
+
     """Dot product (returns scalar)."""
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res = np.zeros(1, dtype=np.float64)
     _wrap("prime_dot", [c_n, c_p, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), y.ctypes.data_as(c_p))
     return res[0]
 
-def magnitude(x):
+def magnitude(x: NDArrayFloat) -> float:
+
     """Euclidean norm / Magnitude."""
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.zeros(1, dtype=np.float64)
     _wrap("prime_mag", [c_n, c_p, c_p])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p))
     return res[0]
 
-def normalize(x):
+def normalize(x: NDArrayFloat) -> NDArrayFloat:
+
     """Returns normalized vector."""
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
@@ -140,13 +163,15 @@ def normalize(x):
     return res
 
 # --- 5. Transforms ---
-def scale(x, s):
+def scale(x: NDArrayFloat, s: float) -> NDArrayFloat:
+
     x = np.ascontiguousarray(x, dtype=np.float64)
     res = np.empty_like(x)
     _wrap("prime_scale", [c_n, c_p, c_p, ctypes.c_double])(x.size, res.ctypes.data_as(c_p), x.ctypes.data_as(c_p), ctypes.c_double(s))
     return res
 
-def rotate_2d(x, y, angle_rad):
+def rotate_2d(x: NDArrayFloat, y: NDArrayFloat, angle_rad: float) -> tuple[NDArrayFloat, NDArrayFloat]:
+
     """
     Rotates points (x, y) by angle (radians).
     x: array of x coords
@@ -154,6 +179,7 @@ def rotate_2d(x, y, angle_rad):
     """
     x = np.ascontiguousarray(x, dtype=np.float64)
     y = np.ascontiguousarray(y, dtype=np.float64)
+    _check_equal_size(x, y)
     res_x = np.empty_like(x)
     res_y = np.empty_like(y)
     

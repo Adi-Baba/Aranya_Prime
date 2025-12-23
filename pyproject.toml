@@ -30,6 +30,9 @@ dependencies = [
     "numpy>=1.20.0",
 ]
 
+[project.optional-dependencies]
+test = ["pytest", "pytest-benchmark"]
+
 [project.urls]
 Homepage = "https://github.com/Adi-Baba/Aranya_Prime"
 Repository = "https://github.com/Adi-Baba/Aranya_Prime.git"
