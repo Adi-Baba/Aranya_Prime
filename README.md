@@ -58,7 +58,14 @@ graph LR
 
 ## ⚡ Quick Start: Google Colab / Linux
 
-### Option 1: Pip Install from GitHub
+### Option 1: Pip Install from GitHub (Recommended)
+This is the easiest way to install Aranya Prime. It will automatically compile the native kernels for your OS.
+
+**Prerequisites:**
+*   **Linux**: `sudo apt install g++ gfortran`
+*   **Colab**: Pre-installed.
+*   **Windows**: See "Local Installation" below.
+
 ```bash
 pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 ```
@@ -100,14 +107,37 @@ pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 
 ## 🛠️ Local Installation
 
-### Prerequisites
-*   `python` (3.9+)
-*   **Windows**: MinGW-w64 (`g++`, `gfortran`) added to PATH.
-*   **Linux/Mac**: `gcc`, `gfortran` (Standard install).
+### Prerequisites (Critical)
+Aranya Prime compiles native code on your machine. You **MUST** have C++ and Fortran compilers installed.
+
+#### Windows
+1.  **Install MSYS2**: Download from [msys2.org](https://www.msys2.org/).
+2.  **Install Toolchain**: Open MSYS2 terminal and run:
+    ```bash
+    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
+    ```
+3.  **Add to PATH**: Add `C:\msys64\mingw64\bin` to your System PATH environment variable.
+4.  **Verify**: Open PowerShell and check:
+    ```powershell
+    g++ --version
+    gfortran --version
+    ```
+
+#### Linux (Debian/Ubuntu)
+```bash
+sudo apt update
+sudo apt install build-essential gfortran
+```
+
+#### macOS
+```bash
+brew install gcc
+```
 
 ### Install Command
+Once pre-requisites are met:
 ```bash
-pip install .
+pip install git+https://github.com/Adi-Baba/Aranya_Prime.git
 ```
 *This detects your OS, compiles the C++/Fortran kernels, and installs the package.*
 

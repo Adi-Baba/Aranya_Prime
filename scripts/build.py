@@ -27,9 +27,10 @@ else: # Linux
 DLL_PATH = os.path.join(BIN_DIR, f"aranya_prime{LIB_EXT}")
 
 # Compiler Commands
-CC = "g++"
-FC = "gfortran"
-VC = "v"
+# Compiler Commands
+CC = os.environ.get("CC", "g++")
+FC = os.environ.get("FC", "gfortran")
+VC = os.environ.get("VC", "v")
 CFLAGS = ["-c", "-O3", "-mavx2", "-mfma", "-fopenmp", "-fPIC"]
 FFLAGS = ["-c", "-O3", "-mavx2", "-fopenmp", "-fPIC"]
 # V compilation is trikcy for linking. We compile V to C first.
@@ -112,10 +113,11 @@ def main():
         sys.stderr.write("Please install g++ (e.g. 'sudo apt install g++' or MinGW).\n")
         sys.exit(1)
         
-    skip_fortran = False
     if not check_compiler(FC):
-        sys.stderr.write(f"WARNING: Fortran compiler '{FC}' not found. Skipping Fortran kernels.\n")
-        skip_fortran = True
+        sys.stderr.write(f"ERROR: Fortran compiler '{FC}' not found.\n")
+        sys.stderr.write("Aranya Prime REQUIRES a Fortran compiler for high-performance BLAS kernels.\n")
+        sys.stderr.write("Please install gfortran (e.g. 'sudo apt install gfortran' or MinGW).\n")
+        sys.exit(1)
 
     objects = []
     
@@ -126,11 +128,10 @@ def main():
         objects.append(compile_cpp(f))
         
     # 2. Fortran
-    if not skip_fortran:
-        f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
-        print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
-        for f in f90_files:
-            objects.append(compile_fortran(f))
+    f90_files = glob.glob(os.path.join(SRC_DIR, "*.f90"))
+    print(f"Found {len(f90_files)} Fortran files: {[os.path.basename(f) for f in f90_files]}")
+    for f in f90_files:
+        objects.append(compile_fortran(f))
         
     # 3. V
     for f in glob.glob(os.path.join(SRC_DIR, "*.v")):

@@ -1,5 +1,5 @@
 include LICENSE
 include README.md
-recursive-include src *.cpp *.f90 *.v
+recursive-include src *
 recursive-include scripts *.py
 recursive-include aranya_prime *.dll *.so *.dylib

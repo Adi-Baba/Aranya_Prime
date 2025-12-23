@@ -39,5 +39,30 @@ Issues = "https://github.com/Adi-Baba/Aranya_Prime/issues"
 where = ["."]
 include = ["aranya_prime*"]
 
+# --- CIBUILDWHEEL CONFIGURATION ---
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-*"
+skip = "*-musllinux_*"
+test-command = "python -c 'import aranya_prime; print(aranya_prime.__file__)'"
+
+# 1. LINUX Config (runs in manylinux container)
+[tool.cibuildwheel.linux]
+# Install gfortran (CentOS/RHEL based)
+before-all = "yum install -y gcc-gfortran"
+environment = { CC="gcc", CXX="g++", FC="gfortran" }
+
+# 2. WINDOWS Config (runs on host)
+[tool.cibuildwheel.windows]
+# Install MinGW logic or rely on pre-installed. 
+# GitHub Windows runner usually has Chocolatey.
+before-all = "choco install mingw --force"
+environment = { PATH="C:\\ProgramData\\chocolatey\\bin;$PATH", CC="g++", CXX="g++", FC="gfortran" }
+
+# 3. MACOS Config (runs on host)
+[tool.cibuildwheel.macos]
+# Install specific gcc version for stability and OpenMP support
+before-all = "brew install gcc@13"
+environment = { CC="gcc-13", CXX="g++-13", FC="gfortran-13" }
+
 [tool.setuptools.package-data]
 aranya_prime = ["*.dll", "*.so", "*.dylib"]
