@@ -108,13 +108,13 @@ def main():
 
     # Check Compilers
     if not check_compiler(CC):
-        print(f"ERROR: C++ compiler '{CC}' not found.")
-        print("Please install g++ (e.g. 'sudo apt install g++' or MinGW).")
+        sys.stderr.write(f"ERROR: C++ compiler '{CC}' not found.\n")
+        sys.stderr.write("Please install g++ (e.g. 'sudo apt install g++' or MinGW).\n")
         sys.exit(1)
         
     if not check_compiler(FC):
-        print(f"ERROR: Fortran compiler '{FC}' not found.")
-        print("Please install gfortran (e.g. 'sudo apt install gfortran').")
+        sys.stderr.write(f"ERROR: Fortran compiler '{FC}' not found.\n")
+        sys.stderr.write("Please install gfortran (e.g. 'sudo apt install gfortran').\n")
         sys.exit(1)
 
     objects = []
@@ -142,8 +142,8 @@ def main():
     if objects:
         link(objects)
     else:
-        print("ERROR: No source files found! Build failed.")
-        print(f"Checked SRC_DIR: {SRC_DIR}")
+        sys.stderr.write("ERROR: No source files found! Build failed.\n")
+        sys.stderr.write(f"Checked SRC_DIR: {SRC_DIR}\n")
         sys.exit(1)
 
 if __name__ == "__main__":
