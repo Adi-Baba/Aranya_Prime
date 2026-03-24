@@ -20,3 +20,5 @@ target/
 # NOTE: Cargo.lock is intentionally committed for reproducibility.
 # When users run `maturin develop`, they get the exact tested versions
 # of rustfft, rayon, and pyo3. Do NOT add Cargo.lock here.
+*.so
+.benchmarks/

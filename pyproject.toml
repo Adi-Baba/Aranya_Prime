@@ -22,8 +22,10 @@ test = [
 ]
 
 [tool.maturin]
-# This tells Maturin to use PyO3 and where to put the compiled .so/.pyd file
+# Use PyO3 extension module for CPython bindings
 features = ["pyo3/extension-module"]
-module-name = "aranya_prime._aranya_prime"
-# We define `aranya_prime` as a Python package directory so we can add pure Python wrappers
+# The Rust module is named 'aranya_prime' (from Cargo.toml lib.name)
+# Python source files (like __init__.py) are in the 'python' directory
 python-source = "python"
+# The module name that Python will import
+module-name = "aranya_prime._aranya_prime"
