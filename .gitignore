@@ -1,26 +1,22 @@
-# Build Artifacts
-bin/
-obj/
-*.dll
-*.so
-*.dylib
-*.o
-*.exe
-
 # Python
+venv/
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+.pytest_cache/
 
-# IDE / Metadata
+# Rust build artifacts
+target/
+
+# Maturin temporary wheels (these are rebuilt on demand)
+*.whl
+
+# IDE
 .vscode/
 .idea/
-.gemini/
 
-# Testing
-*.log
-
-# Packaging
-build/
-*.egg-info/
-
+# NOTE: Cargo.lock is intentionally committed for reproducibility.
+# When users run `maturin develop`, they get the exact tested versions
+# of rustfft, rayon, and pyo3. Do NOT add Cargo.lock here.

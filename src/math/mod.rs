@@ -1,0 +1,9 @@
+pub mod array_ops;
+pub mod convolve;
+pub mod fft;
+pub mod poly;
+pub mod f32_ops;
+pub mod stats;
+pub mod streaming;
+pub mod trig;
+pub mod dct_wavelet;

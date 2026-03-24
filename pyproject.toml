@@ -1,75 +1,29 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "aranya-prime"
-version = "0.1.0a1"
-description = "High-Performance OIH Computational Engine with native C++/Fortran kernels"
+version = "0.1.0"
+description = "High-performance computation engine built with Rust and PyO3."
 readme = "README.md"
-license = {text = "MIT"}
 authors = [
-    {name = "Aditya", email = "adityatheh@gmail.com"}
+    { name = "Aditya", email = "adityapanda9876ak@gmail.com" }
 ]
-keywords = ["high-performance", "computing", "numpy", "optimization", "native"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering",
-]
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 dependencies = [
-    "numpy>=1.20.0",
+    "numpy>=1.20",
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-benchmark"]
+test = [
+    "pytest",
+    "pytest-benchmark",
+]
 
-[project.urls]
-Homepage = "https://github.com/Adi-Baba/Aranya_Prime"
-Repository = "https://github.com/Adi-Baba/Aranya_Prime.git"
-Issues = "https://github.com/Adi-Baba/Aranya_Prime/issues"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["aranya_prime*"]
-
-# --- CIBUILDWHEEL CONFIGURATION ---
-[tool.cibuildwheel]
-build = "cp310-* cp311-* cp312-*"
-skip = "*-musllinux_*"
-test-command = "python -c 'import aranya_prime; print(aranya_prime.__file__)'"
-
-# 1. LINUX Config (runs in manylinux container)
-[tool.cibuildwheel.linux]
-# Install gfortran (CentOS/RHEL based)
-before-all = "yum install -y gcc-gfortran"
-environment = { CC="gcc", CXX="g++", FC="gfortran" }
-
-# 2. WINDOWS Config (runs on host)
-[tool.cibuildwheel.windows]
-# Install MinGW logic or rely on pre-installed. 
-# GitHub Windows runner usually has Chocolatey.
-before-all = "choco install mingw --force"
-environment = { PATH="C:\\ProgramData\\chocolatey\\bin;$PATH", CC="g++", CXX="g++", FC="gfortran" }
-
-# 3. MACOS Config (runs on host)
-# 3. MACOS Config (runs on host)
-[tool.cibuildwheel.macos]
-# Use default compiler (clang) which handles cross-compilation for arm64/x86_64 correctly.
-# We explicitly install gcc to get gfortran (needed for Fortran kernels).
-before-all = "brew install gcc"
-# We don't set CC/CXX to gcc, we stick to Clang. checking FC is tricky as brew gcc version varies.
-# We will trust our build script to find 'gfortran' which brew links.
-environment = { FC="gfortran" }
-
-[tool.setuptools.package-data]
-aranya_prime = ["*.dll", "*.so", "*.dylib"]
+[tool.maturin]
+# This tells Maturin to use PyO3 and where to put the compiled .so/.pyd file
+features = ["pyo3/extension-module"]
+module-name = "aranya_prime._aranya_prime"
+# We define `aranya_prime` as a Python package directory so we can add pure Python wrappers
+python-source = "python"
