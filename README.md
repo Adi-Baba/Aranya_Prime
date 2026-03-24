@@ -251,15 +251,3 @@ pytest -v
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please refer to the [task roadmap](task.md) for current priorities. Whether it's adding a new kernel or optimizing an existing one, feel free to open a PR.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
