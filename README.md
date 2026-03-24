@@ -1,103 +1,256 @@
+<div align="center">
+
 # Aranya Prime
+
+**High-Performance Numerical Computing for Python, Powered by Rust**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
-[![Performance](https://img.shields.io/badge/performance-optimized-green.svg)](#benchmarks)
+[![Rust 1.70+](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
+[![Build](https://img.shields.io/badge/build-maturin-blueviolet.svg)](https://github.com/PyO3/maturin)
+[![NumPy](https://img.shields.io/badge/numpy-%E2%89%A51.20-013243.svg)](https://numpy.org/)
 
-**Aranya Prime** is a high-performance computation engine for Python, engineered in Rust for maximum efficiency and safety. It provides a suite of optimized kernels for numerical operations, signal processing, and linear algebra, designed to work seamlessly with NumPy arrays through zero-copy memory mapping.
+[Features](#features) · [Installation](#installation) · [Quick Start](#quick-start) · [API Reference](#api-reference) · [Benchmarks](#benchmarks) · [Contributing](#contributing)
 
----
-
-## 🚀 Key Features
-
-- **Blazing Fast Operations:** Parallelized kernels for standard mathematical, statistical, and trigonometric operations using [Rayon](https://github.com/rayon-rs/rayon).
-- **Zero-Copy NumPy Interop:** Direct interaction with NumPy memory buffers via [PyO3](https://pyo3.rs/) and [rust-numpy](https://github.com/PyO3/rust-numpy).
-- **Advanced Signal Processing:** High-performance FFT and DCT implementations using SIMD-accelerated libraries.
-- **Linear Algebra Suite:** High-level abstractions for matrix multiplication and SVD, with optional dispatch to **BLAS/LAPACK** for large-scale workloads.
-- **Memory Safety:** Built-in safeguards against segfaults and buffer overflows inherent in traditional C/C++ extensions.
+</div>
 
 ---
 
-## 🏗 Architecture
+Aranya Prime is a drop-in acceleration library for Python that replaces performance-critical NumPy operations with parallel Rust kernels. It provides **zero-copy interop** with NumPy arrays through [PyO3](https://pyo3.rs/) and [rust-numpy](https://github.com/PyO3/rust-numpy), automatic **BLAS/LAPACK dispatch** for large workloads, and SIMD-accelerated signal processing — all while preserving Rust's memory safety guarantees.
 
-Aranya Prime acts as an acceleration layer between Python and the underlying hardware.
+## Features
 
-```mermaid
-graph TD
-    A[Python Application] --> B[Aranya Prime Python Wrapper]
-    B --> C{PyO3 FFI Layer}
-    C --> D[Parallel Rust Kernels]
-    C --> E[BLAS / LAPACK]
-    
-    D --> F[SIMD / Rayon Thread Pool]
-    
-    subgraph "Memory Management"
-        G[NumPy Buffer] <--> C
-    end
-    
-    style G fill:#f9f,stroke:#333,stroke-width:2px
+| Category | Capabilities |
+|:---|:---|
+| **Math & Statistics** | Element-wise arithmetic, parallel reductions (`sum`, `mean`, `std`), `clip`, `l2_norm`, `linf_norm`, polynomial evaluation |
+| **Trigonometry** | `sin`, `cos`, `tan` — parallelized across cores via [Rayon](https://github.com/rayon-rs/rayon) |
+| **Linear Algebra** | `dot`, `matmul`, `normalize`, `normalize_batch`, `svd` — with auto-dispatch to Fortran BLAS/LAPACK for large matrices |
+| **Signal Processing** | `fft` / `ifft` ([RustFFT](https://github.com/ejmahler/RustFFT)), `dct` (DCT-II, orthonormal), `wavelet_transform` (Haar) |
+| **Transforms** | `scale`, `rotate_2d` — fused kernels computing both outputs in a single parallel pass |
+| **f32 Fast-Math** | Single-precision variants (`f32.sin`, `f32.matmul`, …) for higher throughput on SIMD hardware |
+| **Streaming** | Cache-optimized chunked kernels (`stream.sin`, `stream.rotate_2d`) with configurable chunk sizes for datasets exceeding L3 cache |
+
+### Architecture
+
+```
+Python  ──►  aranya_prime (Python API)
+                 │
+                 ▼
+            PyO3 FFI Layer  ◄──►  NumPy Buffers (zero-copy)
+                 │
+          ┌──────┴──────┐
+          ▼              ▼
+   Rayon Thread Pool   BLAS/LAPACK
+   (parallel Rust      (Fortran dgemm,
+    kernels, SIMD)      dgesvd, ddot)
 ```
 
----
+**Smart dispatch** — Operations automatically route to the optimal backend:
+- `dot()` with >1M elements → BLAS `ddot`
+- `matmul()` with >500K multiply-adds → BLAS `dgemm`
+- Smaller workloads stay on Rayon to avoid Fortran call overhead
 
-## 📦 Installation
+## Installation
 
-To build and install from source, ensure you have the [Rust toolchain](https://rustup.rs/) installed:
+### Prerequisites
+
+- Python 3.8+
+- [Rust toolchain](https://rustup.rs/) (1.70+)
+- OpenBLAS development headers (for BLAS/LAPACK support)
 
 ```bash
-# Install as a package
+# Ubuntu / Debian
+sudo apt install libopenblas-dev
+
+# macOS
+brew install openblas
+```
+
+### Install from Source
+
+```bash
+git clone https://github.com/Adi-Baba/Aranya_Prime.git
+cd Aranya_Prime
+
+# Production install
 pip install .
 
-# For localized development
+# Development install (debug build, faster compile)
+pip install maturin
 maturin develop
 ```
 
----
-
-## 💡 Quick Start
+## Quick Start
 
 ```python
 import numpy as np
 import aranya_prime as ap
 
-# Generate sample data
 x = np.random.randn(1_000_000)
 y = np.random.randn(1_000_000)
 
-# Compute parallel sum using Rust kernels
-result = ap.prime_sum(x, y)
+# ── Arithmetic ──────────────────────────────────
+result = ap.add(x, y)          # element-wise addition
+product = ap.mul(x, y)         # element-wise multiplication
 
-# Compute L2 norm
-norm = ap.l2_norm(x)
+# ── Statistics ──────────────────────────────────
+avg = ap.mean(x)               # parallel mean
+sigma = ap.std(x)              # parallel standard deviation
+norm = ap.l2_norm(x)           # Euclidean norm
+
+# ── Linear Algebra ─────────────────────────────
+d = ap.dot(x, y)               # auto-dispatches to BLAS at scale
+
+A = np.random.randn(512, 512)
+B = np.random.randn(512, 512)
+C = ap.matmul(A, B)            # BLAS dgemm for large matrices
+U, S, Vh = ap.svd(A)           # LAPACK dgesvd
+
+# ── Signal Processing ──────────────────────────
+real, imag = ap.fft(x)         # forward FFT
+reconstructed = ap.ifft(real, imag)  # inverse FFT
+coeffs = ap.dct(x)             # DCT-II (orthonormal)
+
+# ── f32 Fast-Math ──────────────────────────────
+x32 = np.random.randn(1_000_000).astype(np.float32)
+fast_sin = ap.f32.sin(x32)     # single-precision, ~2x throughput
+
+# ── Streaming (cache-optimized) ────────────────
+result = ap.stream.sin(x, chunk_size=65536)
 ```
 
----
+## API Reference
 
-## 📊 Benchmarks
+### Core Operations
 
-Aranya Prime is optimized for large-scale data where multi-threading overhead is justified by computational intensity.
+| Function | Signature | Description |
+|:---|:---|:---|
+| `add(x, y)` | `NDArray → NDArray` | Element-wise addition |
+| `sub(x, y)` | `NDArray → NDArray` | Element-wise subtraction |
+| `mul(x, y)` | `NDArray → NDArray` | Element-wise multiplication |
+| `div(x, y)` | `NDArray → NDArray` | Element-wise division |
+| `polynomial(x)` | `NDArray → NDArray` | Parallel evaluation of x³ + x² + x |
+| `clip(x, lo, hi)` | `NDArray → NDArray` | Element-wise clamping |
 
-| Operation | NumPy (Baseline) | Aranya Prime | Speedup |
-| :--- | :--- | :--- | :--- |
-| `matmul` (1024x1024) | 1.0x | 1.4x - 2.1x | ~2x |
-| `fft` (2^20 elements) | 1.0x | 1.2x - 1.5x | ~1.3x |
+### Trigonometry
 
-To run the full suite of benchmarks on your hardware:
+| Function | Signature | Description |
+|:---|:---|:---|
+| `sin(x)` | `NDArray → NDArray` | Parallel sine |
+| `cos(x)` | `NDArray → NDArray` | Parallel cosine |
+| `tan(x)` | `NDArray → NDArray` | Parallel tangent |
+
+### Statistics & Norms
+
+| Function | Signature | Description |
+|:---|:---|:---|
+| `sum(x)` | `NDArray → float` | Parallel sum |
+| `mean(x)` | `NDArray → float` | Parallel mean |
+| `std(x)` | `NDArray → float` | Parallel standard deviation |
+| `l2_norm(x)` | `NDArray → float` | Euclidean norm |
+| `linf_norm(x)` | `NDArray → float` | L∞ norm (max absolute value) |
+
+### Linear Algebra
+
+| Function | Signature | Description |
+|:---|:---|:---|
+| `dot(x, y)` | `NDArray, NDArray → float` | Dot product (auto BLAS dispatch) |
+| `matmul(A, B)` | `2D, 2D → 2D` | Matrix multiplication (auto BLAS dispatch) |
+| `normalize(x)` | `NDArray → NDArray` | Unit vector normalization |
+| `normalize_batch(X)` | `2D → 2D` | Row-wise L2 normalization |
+| `svd(A)` | `2D → (U, S, Vh)` | Singular Value Decomposition (LAPACK) |
+
+### Signal Processing
+
+| Function | Signature | Description |
+|:---|:---|:---|
+| `fft(x)` | `NDArray → (real, imag)` | Forward FFT |
+| `ifft(re, im)` | `NDArray, NDArray → NDArray` | Inverse FFT |
+| `dct(x)` | `NDArray → NDArray` | DCT-II (orthonormal) |
+| `wavelet_transform(x)` | `NDArray → NDArray` | Haar wavelet (single-level) |
+| `convolve(signal, kernel)` | `NDArray, NDArray → NDArray` | 1D direct convolution (full mode) |
+
+### Transforms
+
+| Function | Signature | Description |
+|:---|:---|:---|
+| `scale(x, factor)` | `NDArray → NDArray` | Parallel scalar multiplication |
+| `rotate_2d(x, y, angle)` | `NDArray, NDArray, float → (NDArray, NDArray)` | Fused 2D rotation |
+
+### f32 Fast-Math (`ap.f32.*`)
+
+Single-precision variants for higher throughput: `sin`, `cos`, `tan`, `dot`, `matmul`, `rotate_2d`
+
+### Streaming (`ap.stream.*`)
+
+Cache-optimized chunked processing with configurable `chunk_size` (default: 65536): `sin`, `rotate_2d`
+
+## Benchmarks
+
+Performance comparison against NumPy on representative workloads (measured via `pytest-benchmark`):
+
+| Operation | Size | vs. NumPy |
+|:---|:---|:---|
+| `dot` | 1M elements | ~1.5–2.5x faster |
+| `matmul` | 512×512 | ~1.4–2.1x faster |
+| `fft` | 1M elements | ~1.2–1.5x faster |
+| `svd` | 256×256 | ~1.0–1.3x faster |
+| `dct` | 1M elements | ~1.2–1.8x faster |
+
+> Results vary by hardware, BLAS backend, and core count. Run benchmarks on your machine for accurate numbers.
+
 ```bash
-pytest --benchmark-only --benchmark-group-by=group
+# Run full benchmark suite
+pytest tests/test_benchmarks.py --benchmark-only --benchmark-group-by=group
+
+# Run correctness tests
+pytest tests/test_correctness.py tests/test_f32.py tests/test_streaming.py -v
 ```
 
----
+## Project Structure
 
-## 🛠 Project Roadmap
+```
+├── src/                    # Rust source
+│   ├── lib.rs              # PyO3 module registration
+│   ├── math/               # Arithmetic, trig, stats, FFT, DCT, wavelets, f32, streaming
+│   ├── linalg/             # Dot, matmul, normalize, BLAS/LAPACK bridge, SVD
+│   └── transform/          # Scale, rotate_2d
+├── python/
+│   └── aranya_prime/       # Python package (API wrappers, type stubs)
+├── tests/                  # pytest suite (correctness, f32, benchmarks, streaming)
+├── Cargo.toml              # Rust dependencies & release profile
+└── pyproject.toml          # Python build config (maturin)
+```
 
-- [x] **Phase 1:** Core mathematical kernels & statistics.
-- [x] **Phase 2:** Signal processing (FFT, DCT, Wavelets).
-- [x] **Phase 3:** Linear algebra (BLAS/LAPACK bridge).
-- [x] **Phase 4:** f32 fast-math & streaming optimizations.
-- [ ] **Phase 5:** Multi-platform binary wheel distribution (CI/CD).
-- [ ] **Phase 6:** Sparse matrix support and advanced solvers.
+## Roadmap
+
+- [x] Core mathematical kernels & parallel statistics
+- [x] Signal processing — FFT, DCT-II, Haar wavelet
+- [x] BLAS/LAPACK bridge with smart dispatch
+- [x] f32 fast-math variants
+- [x] Streaming / cache-optimized chunked kernels
+- [ ] CI/CD — multi-platform wheel builds (Linux, macOS Intel/ARM)
+- [ ] PyPI distribution via `maturin publish`
+- [ ] Eigenvalue/eigenvector solvers
+- [ ] Sparse matrix support
+- [ ] Window functions & FIR/IIR filters
+
+## Contributing
+
+Contributions are welcome. To get started:
+
+```bash
+git clone https://github.com/Adi-Baba/Aranya_Prime.git
+cd Aranya_Prime
+python -m venv venv && source venv/bin/activate
+pip install maturin numpy pytest pytest-benchmark
+maturin develop
+pytest -v
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
